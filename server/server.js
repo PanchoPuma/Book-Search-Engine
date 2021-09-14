@@ -10,20 +10,30 @@ const { typeDefs, resolvers } = require('./schemas');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+async function startServer() {
+apolloServer = new ApolloServer({
+  typeDefs, 
+  resolvers, 
+  context: authMiddleware})
+  await apolloServer.start();
+  apolloServer.applyMiddleware({ app });
+}
 
-const server = new ApolloServer({typeDefs, resolvers, context: authMiddleware})
+startServer();
+
+// const server = new ApolloServer({typeDefs, resolvers, context: authMiddleware})
+// await server.start()
+// server.applyMiddleware({ app });
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-server.applyMiddleware({ app });
-
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
+  app.use(express.static(path.join(__dirname, '../client/public')));
 }
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  res.sendFile(path.join(__dirname, '../client/public/index.html'));
 });
 
 db.once('open', () => {
